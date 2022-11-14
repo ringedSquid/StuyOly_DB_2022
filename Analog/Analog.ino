@@ -1,6 +1,6 @@
 #include <LiquidCrystal.h>
 #define TESTS 5
-const int RS=2, E=3, D4=8, D5=7, D6=6, D7=5; //LCD pins
+const int RS=2, E=3, D4=5, D5=6, D6=7, D7=8; //LCD pins
 const double offset = 0;
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 

@@ -1,6 +1,6 @@
 #include <LiquidCrystal.h>
 #define TESTS 5
-const int RS=2, E=3, D4=8, D5=7, D6=6, D7=5; //LCD pins
+const int RS=2, E=3, D4=5, D5=6, D6=7, D7=8; //LCD pins
 const int RED=11, GRN=10, BLU=9, TOGGLE=12;
 const float R1 = 50, R2 = 250; //Weight ranges for LEDs
 const double offset = 416 - ((416-198)+16);
@@ -37,7 +37,7 @@ void loop() {
     digitalWrite(RED, LOW);
     digitalWrite(GRN, LOW);
     digitalWrite(BLU, LOW);
-    if (digitalRead(TOGGLE) == HIGH) {
+    if (digitalRead(TOGGLE) == HIGH) { 
       lcd.clear();
       lcd.setCursor(0,0);
       lcd.print("MEASURING...");
