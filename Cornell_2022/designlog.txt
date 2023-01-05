@@ -1,0 +1,42 @@
+a: Top-down photograph with label and summary on how device was constructed
+	BOARD:
+		a: atmega328p - microcontroller used to measure and display data
+		b: INA125P - instrumentation amplifier
+		c: HD44780 LCD - 16x02 LCD display used to display data. Operating in 4 bit mode
+		d: wheatstone half bridge - used to measure the change in resistance from the strain gauge in terms of voltage
+		e: 2k trim potentiometer - used to change the gain of the instrumentation amplifier
+		f: 10k potentiometer - changes the contrast of the LCD display
+		g: Red LED
+		h: Green LED
+		i: Blue LED
+		j: "Measure" button - signals microcontroller to read data from the sensor
+		k: Socket for LM324 - amplifier used in early iterations of our design
+		l: Connector for stressed strain gauge
+		m: Connector for unstressed strain gauge
+		
+		The circuit was first prototyped on a breadboard, and the soldered to a 9x15cm perfboard, which provided more
+		consistent readings from the sensor. IC sockets are used to ensure that ics can be quickly replaced. Initially 
+		a LM324 quad op-amp was utilized to amplify the voltage from the wheatstone bridge, However we switched to
+		using a INA125P instrumentation amplifier to carry out this task. We decided to leave in the socket for the 
+		LM324 as an alternative amplifier if the INA125P were to fail during competitons. 
+ 
+	ENTIRE SETUP:
+		a: housing for main board and unstressed strain gauge
+		b: main electronics board
+		c: force/mass sensor
+		d: arduino board used to program and provide power to the whole device
+		
+	FORCE/MASS SENSOR:
+		a: strain gauge
+		b: 6062 Aluminium plate
+		c: measurement mechanism
+		d: counterweight 
+
+		A singular strain gauge was glued to a plate of 6061 aluminum to measure forces acted upon it. Because of 
+		the relatively high rigidity of the aluminium, a lever mechanism is used to increase the amount of force
+		acting on the alumnium. Because of the size of the lever, a counterweight is needed in order to keep the sensor
+		secured. Another strain gauge identical to the first was glued to the metal housing and no force would be
+		acted upon it. Due to the fact that the resistance of strain gauges can vary with temperature, in order to
+		produce consistent results, 2 strain gauges are used to counteract temperature fluctuations.
+
+ 
