@@ -1,29 +1,37 @@
 #include "SPI.h"
 #include "LiquidCrystal.h"
 
+//Amount of samples for the average
+#define N_AVG 2500
+
 //LEDS use analog pins
 #define RED A3
 #define GRN A4
-#define BLU A5 
+#define BLU A5
+
+//Buttons
+#define B1 A1
+#define B2 A2
+ 
 #define DRDY A0
 const int ADCRST = 9, SPICLOCK = 13; //MAX1416 PINS
 const int RS = 2, E = 3, D4 = 5, D5 = 6, D6 = 7, D7 = 8; //LCD PINS
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 const int ss=10;
-unsigned int adcValue;
-
+unsigned int adcValue, offset = 0;
  
 void setup()
 {
+  pinMode(B1, INPUT);
+  pinMode(B2, INPUT);
   pinMode(RED, OUTPUT);
   pinMode(GRN, OUTPUT);
   pinMode(BLU, OUTPUT);
-  lcd.begin(16, 2);
-  lcd.print("INIT...");
-  delay(100);
   pinMode(DRDY, INPUT);
   pinMode(ADCRST, OUTPUT);
   pinMode(ss, OUTPUT);
+  lcd.begin(16, 2);
+  lcd.print("INIT...");
   digitalWrite(ss,HIGH);
   SPI.begin();
   SPI.setBitOrder(MSBFIRST);
@@ -36,10 +44,13 @@ void setup()
   delay(1000);
   digitalWrite(ADCRST,HIGH);
   delay(1000);
+  MAX1416_Config();
+  delay(100);
+  MAX1416_ReadSetupReg();
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("READY!");
-  delay(300);
+  delay(100);
 }
 
 void MAX1416_SerialInit()//You can modify it for handle channels
@@ -159,32 +170,41 @@ unsigned int MAX1416_ReadCH0Data() //You can modify it to read other channels
       
       return uiData;
 }
- 
+
+unsigned int readavg(int n) {
+  unsigned long a = 0;
+  for (int i = 0; i < n; i++) {
+    MAX1416_WaitForData_Hard();
+    a += MAX1416_ReadCH0Data();
+  }
+  return a/n;
+}
+
+void tare() {
+  offset = readavg(N_AVG) * -1; //Voltage decreases with load applied
+}
+
 void loop()
 {
-  //digitalWrite(ss,LOW); // Enable ADC SPI
-  delay(100); 
-  MAX1416_Config();
-  delay(100);
-  double volt;
-  MAX1416_ReadSetupReg();
-  while(1)
-  {
-      
-      //MAX1416_WaitForData_Soft() ;
-      MAX1416_WaitForData_Hard() ;
-      delay(100);
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      adcValue = MAX1416_ReadCH0Data();
-      lcd.print("analog: ");
-      lcd.print(adcValue);
-      lcd.setCursor(0, 1);
-      volt=double(adcValue)*5/65535;
-      lcd.print("volt: ");
-      lcd.print(volt,4);
-      
+  double voltage;
+  if (digitalRead(B1) == HIGH) {
+    lcd.clear();
+    lcd.print("READING...");
+    adcValue = readavg(N_AVG) - offset;
+    voltage = adcValue*5/65535;
+    lcd.clear();
+    lcd.print("DIG: ");
+    lcd.print(adcValue);
+    lcd.setCursor(0, 1);
+    lcd.print("VOL: ");
+    lcd.print(voltage);
+  }
+  if (digitalRead(B2) == HIGH) {
+    lcd.clear();
+    lcd.print("TARE...");
+    tare();
+    lcd.clear();
+    lcd.print("TARE COMPLETE");
   }
   digitalWrite(ss,HIGH); // Disable ADC SPI
-
 }
