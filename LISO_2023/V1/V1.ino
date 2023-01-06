@@ -2,7 +2,7 @@
 #include "LiquidCrystal.h"
 
 //Amount of samples for the average
-#define N_AVG 2500
+#define N_AVG 3000
 
 //LEDS use analog pins
 #define RED A3
@@ -80,7 +80,7 @@ void MAX1416_Config()//You can modify it for handle channels
   //Write OP
   SPI.transfer(0x10);//command for comm reg to write setup register 
   delay(100);
-  SPI.transfer(0x6C);//command for setup reg to self calibration,unipolar,unbuffered,     
+  SPI.transfer(B01100100);//command for setup reg to self calibration,unipolar,unbuffered,     
   //End Write OP
   
 
@@ -171,8 +171,8 @@ unsigned int MAX1416_ReadCH0Data() //You can modify it to read other channels
       return uiData;
 }
 
-unsigned int readavg(int n) {
-  unsigned long a = 0;
+double readavg(int n) {
+  double a = 0;
   for (int i = 0; i < n; i++) {
     MAX1416_WaitForData_Hard();
     a += MAX1416_ReadCH0Data();
@@ -191,13 +191,13 @@ void loop()
     lcd.clear();
     lcd.print("READING...");
     adcValue = readavg(N_AVG) - offset;
-    voltage = adcValue*5/65535;
+    voltage = double(adcValue)*5/65535;
     lcd.clear();
     lcd.print("DIG: ");
     lcd.print(adcValue);
     lcd.setCursor(0, 1);
     lcd.print("VOL: ");
-    lcd.print(voltage);
+    lcd.print(voltage, 4);
   }
   if (digitalRead(B2) == HIGH) {
     lcd.clear();
