@@ -1,10 +1,6 @@
 #include "SPI.h"
 #include "LiquidCrystal.h"
 
-// Set weight Ranges in grams, R1 <= R2*/
-const double R1 = 50;
-const double R2 = 500;
-
 //Amount of samples for the average
 #define N_AVG 3000
 
@@ -23,10 +19,7 @@ const int RS = 2, E = 3, D4 = 5, D5 = 6, D6 = 7, D7 = 8; //LCD PINS
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 const int ss=10;
 unsigned int adcValue, offset = 0;
-
-
-
-
+ 
 void setup()
 {
   pinMode(B1, INPUT);
@@ -34,9 +27,6 @@ void setup()
   pinMode(RED, OUTPUT);
   pinMode(GRN, OUTPUT);
   pinMode(BLU, OUTPUT);
-  digitalWrite(RED, LOW);
-  digitalWrite(GRN, LOW);
-  digitalWrite(BLU, LOW);
   pinMode(DRDY, INPUT);
   pinMode(ADCRST, OUTPUT);
   pinMode(ss, OUTPUT);
@@ -152,7 +142,9 @@ byte MAX1416_ReadSetupReg() //You can modify it to read other channels
     
       
       return myByte;
-} 
+}
+ 
+
  
 unsigned int MAX1416_ReadCH0Data() //You can modify it to read other channels
 {
@@ -189,62 +181,23 @@ double readavg(int n) {
 }
 
 void tare() {
-  offset = 36405 - readavg(N_AVG); //Voltage decreases with load applied
-}
-
-double gx(double x) { //g(x) 
-  return (36400 - (2.81*x) - (0.000845*pow(x,2)) + (2.39*pow(10,-6)*pow(x,3)) - 8.92*pow(10,-10)*pow(x,4));
-}
-
-double gx1(double x) { //Derivative of g(x)
- return ((-3.568*pow(10,-9)*pow(x,3)) + (7.17*pow(10,-6)*pow(x,2)) - (0.00169*x) -2.81);
-}
-
-double newtonsmethod(double k) {
-  double x = 500;
-  for(int i=0; i<15; i++) {
-    x = ((gx1(x)*x)-(gx(x)-k))/gx1(x);
-  }
-  return x;
-}
-
-//1.23*10^-3*x^2 - 3.44x + 36444
-
-double quadraticform(double x) {
-  return (3.44 + sqrt(pow(3.44, 2) - 4*(1.23*pow(10, -3))*(36444-x)))/(2*1.23*pow(10, -3));
+  offset = readavg(N_AVG) * -1; //Voltage decreases with load applied
 }
 
 void loop()
-{ 
-  double mass = 0;
+{
   double voltage;
   if (digitalRead(B1) == HIGH) {
     lcd.clear();
     lcd.print("READING...");
-    adcValue = readavg(N_AVG) + offset;
+    adcValue = readavg(N_AVG) - offset;
     voltage = double(adcValue)*5/65535;
-    mass = newtonsmethod(adcValue);
     lcd.clear();
-    lcd.print(mass, 4);
-    lcd.print("g");
+    lcd.print("DIG: ");
+    lcd.print(adcValue);
     lcd.setCursor(0, 1);
+    lcd.print("VOL: ");
     lcd.print(voltage, 4);
-    lcd.print(" v");
-    if (mass < R1) { 
-      digitalWrite(RED, HIGH);
-      digitalWrite(GRN, LOW);
-      digitalWrite(BLU, LOW);
-    }
-    if ((mass > R1) && (mass < R2)){ 
-      digitalWrite(RED, LOW);
-      digitalWrite(GRN, HIGH);
-      digitalWrite(BLU, LOW);
-    }
-    if (mass > R2) { 
-      digitalWrite(RED, LOW);
-      digitalWrite(GRN, LOW);
-      digitalWrite(BLU, HIGH);
-    }
   }
   if (digitalRead(B2) == HIGH) {
     lcd.clear();
