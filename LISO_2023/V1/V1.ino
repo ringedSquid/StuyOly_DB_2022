@@ -5,11 +5,11 @@
 #define RED A3
 #define GRN A4
 #define BLU A5 
-
-const int DRDY = 9, ADCRST = 2, SPICLOCK = 13; //MAX1416 PINS
+#define DRDY A0
+const int ADCRST = 9, SPICLOCK = 13; //MAX1416 PINS
 const int RS = 2, E = 3, D4 = 5, D5 = 6, D6 = 7, D7 = 8; //LCD PINS
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
-const int ss=8;
+const int ss=10;
 unsigned int adcValue;
 
  
@@ -23,6 +23,7 @@ void setup()
   delay(100);
   pinMode(DRDY, INPUT);
   pinMode(ADCRST, OUTPUT);
+  pinMode(ss, OUTPUT);
   digitalWrite(ss,HIGH);
   SPI.begin();
   SPI.setBitOrder(MSBFIRST);
@@ -68,8 +69,9 @@ void MAX1416_Config()//You can modify it for handle channels
   //Write OP
   SPI.transfer(0x10);//command for comm reg to write setup register 
   delay(100);
-  SPI.transfer(0x44);//command for setup reg to self calibration,unipolar,unbuffered,     
+  SPI.transfer(0x6C);//command for setup reg to self calibration,unipolar,unbuffered,     
   //End Write OP
+  
 
   digitalWrite(ss,HIGH); // Disable ADC SPI
 }
@@ -130,6 +132,7 @@ byte MAX1416_ReadSetupReg() //You can modify it to read other channels
       
       return myByte;
 }
+ 
 
  
 unsigned int MAX1416_ReadCH0Data() //You can modify it to read other channels
@@ -170,7 +173,7 @@ void loop()
       
       //MAX1416_WaitForData_Soft() ;
       MAX1416_WaitForData_Hard() ;
-      delay(10);
+      delay(100);
       lcd.clear();
       lcd.setCursor(0, 0);
       adcValue = MAX1416_ReadCH0Data();
@@ -178,7 +181,7 @@ void loop()
       lcd.print(adcValue);
       lcd.setCursor(0, 1);
       volt=double(adcValue)*5/65535;
-      lcd.print("volt =");
+      lcd.print("volt: ");
       lcd.print(volt,4);
       
   }
