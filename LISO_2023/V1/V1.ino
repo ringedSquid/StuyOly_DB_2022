@@ -2,8 +2,12 @@
 #include "LiquidCrystal.h"
 
 // Set weight Ranges in grams, R1 <= R2*/
+//RANGE 1 <= R1
+//R1 < RANGE 2 < R2
+//RANGE 3 >= R2
 const double R1 = 50;
 const double R2 = 500;
+
 
 //Amount of samples for the average
 #define N_AVG 3000
@@ -23,9 +27,6 @@ const int RS = 2, E = 3, D4 = 5, D5 = 6, D6 = 7, D7 = 8; //LCD PINS
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 const int ss=10;
 unsigned int adcValue, offset = 0;
-
-
-
 
 void setup()
 {
@@ -230,7 +231,7 @@ void loop()
     lcd.setCursor(0, 1);
     lcd.print(voltage, 4);
     lcd.print(" v");
-    if (mass < R1) { 
+    if (mass <= R1) { 
       digitalWrite(RED, HIGH);
       digitalWrite(GRN, LOW);
       digitalWrite(BLU, LOW);
@@ -240,13 +241,13 @@ void loop()
       digitalWrite(GRN, HIGH);
       digitalWrite(BLU, LOW);
     }
-    if (mass > R2) { 
+    else { 
       digitalWrite(RED, LOW);
       digitalWrite(GRN, LOW);
       digitalWrite(BLU, HIGH);
     }
   }
-  if (digitalRead(B2) == HIGH) {
+   (digitalRead(B2) == HIGH) {
     lcd.clear();
     lcd.print("TARE...");
     tare();
