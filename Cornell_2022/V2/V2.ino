@@ -5,8 +5,19 @@ const int RS=2, E=3, D4=5, D5=6, D6=7, D7=8; //LCD Pins
 const int RED=11, GRN=10, BLU=9; //LED Pins
 const int TOGGLE = 12;
 /*Weight ranges in GRAMS, R1 <= R2*/
-const double R1 = 415;
-const double R2 = 715;
+
+//RED
+const double R1_MIN = 300;
+const double R1_MAX = 400;
+
+//GREEN
+const double R2_MIN = 500;
+const double R2_MAX = 700;
+
+//BLUE
+const double R3_MIN = 800;
+const double R3_MAX = 950;
+
 double offset = 0; //offset reading for sensor
 const int TESTS = 5000;
 const int INIT_TESTS = 1000;
@@ -33,7 +44,7 @@ void setup() {
   offset = init_avg/INIT_TESTS;
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("DBMAIN_CORN");
+  lcd.print("DBMAIN_MIT");
 }
 
 double gx(double x);
@@ -63,17 +74,17 @@ void loop() {
       lcd.setCursor(0, 1);
       lcd.print(mass);
       lcd.print("g");
-      if (mass < R1) {
+      if ((mass > R1_MIN) && (mass < R1_MAX)) {
         digitalWrite(RED, HIGH);
         digitalWrite(GRN, LOW);
         digitalWrite(BLU, LOW);
       }
-      else if ((mass > R1) && (mass < R2)) {
+      else if ((mass > R2_MIN) && (mass < R2_MAX)) {
         digitalWrite(RED, LOW);
         digitalWrite(GRN, HIGH);
         digitalWrite(BLU, LOW);
       }
-      else {
+      else if ((mass > R3_MIN) && (mass < R3_MAX)) {
         digitalWrite(RED, LOW);
         digitalWrite(GRN, LOW);
         digitalWrite(BLU, HIGH);

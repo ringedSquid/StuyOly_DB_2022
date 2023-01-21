@@ -1,21 +1,28 @@
 #include "SPI.h"
 #include "LiquidCrystal.h"
 
-// Set weight Ranges in grams, R1 <= R2*/
-//RANGE 1 <= R1
-//R1 < RANGE 2 < R2
-//RANGE 3 >= R2
-const double R1 = 50;
-const double R2 = 500;
+// Set weight Ranges in grams
+
+//Range 1: RED LED
+const double R1_MIN = 50;
+const double R1_MAX = 71;
+
+//Range 2: GREEN LED
+const double R2_MIN = 400;
+const double R2_MAX= 501;
+
+//Range 3: BLUE LED
+const double R3_MIN = 600;
+const double R3_MAX = 800;
 
 
 //Amount of samples for the average
 #define N_AVG 3000
 
 //LEDS use analog pins
-#define RED A3
+#define RED A5
 #define GRN A4
-#define BLU A5
+#define BLU A3
 
 //Buttons
 #define B1 A1
@@ -231,23 +238,23 @@ void loop()
     lcd.setCursor(0, 1);
     lcd.print(voltage, 4);
     lcd.print(" v");
-    if (mass <= R1) { 
+    if ((mass > R1_MIN) && (mass < R1_MAX)) { 
       digitalWrite(RED, HIGH);
       digitalWrite(GRN, LOW);
       digitalWrite(BLU, LOW);
     }
-    if ((mass > R1) && (mass < R2)){ 
+    else if ((mass > R2_MIN) && (mass < R2_MAX)) { 
       digitalWrite(RED, LOW);
       digitalWrite(GRN, HIGH);
       digitalWrite(BLU, LOW);
     }
-    else { 
+    else if ((mass > R3_MIN) && (mass < R3_MAX)) { 
       digitalWrite(RED, LOW);
       digitalWrite(GRN, LOW);
       digitalWrite(BLU, HIGH);
     }
   }
-   (digitalRead(B2) == HIGH) {
+  if (digitalRead(B2) == HIGH) {
     lcd.clear();
     lcd.print("TARE...");
     tare();
