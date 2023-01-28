@@ -1,28 +1,21 @@
 #include "SPI.h"
 #include "LiquidCrystal.h"
 
-// Set weight Ranges in grams
 
-//Range 1: RED LED
-const double R1_MIN = 50;
-const double R1_MAX = 71;
-
-//Range 2: GREEN LED
-const double R2_MIN = 400;
-const double R2_MAX= 501;
-
-//Range 3: BLUE LED
-const double R3_MIN = 600;
-const double R3_MAX = 800;
+// Set weight Ranges in grams, R1 <= R2*/
+const double R1 = 50;
+const double R2 = 500;
 
 
 //Amount of samples for the average
-#define N_AVG 3000
+#define N_AVG 250
+
 
 //LEDS use analog pins
-#define RED A5
+#define RED A3
 #define GRN A4
-#define BLU A3
+#define BLU A5
+
 
 //Buttons
 #define B1 A1
@@ -34,6 +27,7 @@ const int RS = 2, E = 3, D4 = 5, D5 = 6, D6 = 7, D7 = 8; //LCD PINS
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 const int ss=10;
 unsigned int adcValue, offset = 0;
+
 
 void setup()
 {
@@ -71,6 +65,7 @@ void setup()
   delay(100);
 }
 
+
 void MAX1416_SerialInit()//You can modify it for handle channels
 {
   //series of commandbit    
@@ -80,6 +75,7 @@ void MAX1416_SerialInit()//You can modify it for handle channels
   SPI.transfer(0xFF);  
   SPI.transfer(0xFF); 
   SPI.transfer(0xFF);
+
 
   digitalWrite(ss,HIGH); // Disable ADC SPI
 }
@@ -98,9 +94,10 @@ void MAX1416_Config()//You can modify it for handle channels
   //Write OP
   SPI.transfer(0x10);//command for comm reg to write setup register 
   delay(100);
-  SPI.transfer(B01100100);//command for setup reg to self calibration,unipolar,unbuffered,     
+  SPI.transfer(B01100000);//command for setup reg to self calibration,unipolar,unbuffered,     
   //End Write OP
   
+
 
   digitalWrite(ss,HIGH); // Disable ADC SPI
 }
@@ -124,10 +121,12 @@ void MAX1416_WaitForData_Soft()
       digitalWrite(ss,HIGH); // Disable ADC SPI
 }
 
+
 void MAX1416_WaitForData_Hard() 
 {
       char DataNotReady = 1;
       char value;
+
 
       while(DataNotReady) // wait for end of conversion 
       {
@@ -142,8 +141,10 @@ void MAX1416_WaitForData_Hard()
       }
 }
 
+
 byte MAX1416_ReadSetupReg() //You can modify it to read other channels
 {
+
 
       byte myByte;
       
@@ -187,6 +188,7 @@ unsigned int MAX1416_ReadCH0Data() //You can modify it to read other channels
       return uiData;
 }
 
+
 double readavg(int n) {
   double a = 0;
   for (int i = 0; i < n; i++) {
@@ -196,31 +198,18 @@ double readavg(int n) {
   return a/n;
 }
 
+
 void tare() {
-  offset = 36405 - readavg(N_AVG); //Voltage decreases with load applied
+  offset = 34361 - readavg(N_AVG); //Voltage decreases with load applied
 }
 
-double gx(double x) { //g(x) 
-  return (36400 - (2.81*x) - (0.000845*pow(x,2)) + (2.39*pow(10,-6)*pow(x,3)) - 8.92*pow(10,-10)*pow(x,4));
+
+//Inverse of the model 
+double gx1(double x) { 
+ return (x - 34362)/(-1.78);
 }
 
-double gx1(double x) { //Derivative of g(x)
- return ((-3.568*pow(10,-9)*pow(x,3)) + (7.17*pow(10,-6)*pow(x,2)) - (0.00169*x) -2.81);
-}
 
-double newtonsmethod(double k) {
-  double x = 500;
-  for(int i=0; i<15; i++) {
-    x = ((gx1(x)*x)-(gx(x)-k))/gx1(x);
-  }
-  return x;
-}
-
-//1.23*10^-3*x^2 - 3.44x + 36444
-
-double quadraticform(double x) {
-  return (3.44 + sqrt(pow(3.44, 2) - 4*(1.23*pow(10, -3))*(36444-x)))/(2*1.23*pow(10, -3));
-}
 
 void loop()
 { 
@@ -231,24 +220,25 @@ void loop()
     lcd.print("READING...");
     adcValue = readavg(N_AVG) + offset;
     voltage = double(adcValue)*5/65535;
-    mass = newtonsmethod(adcValue);
+    mass = gx1(adcValue);
     lcd.clear();
     lcd.print(mass, 4);
     lcd.print("g");
     lcd.setCursor(0, 1);
     lcd.print(voltage, 4);
     lcd.print(" v");
-    if ((mass > R1_MIN) && (mass < R1_MAX)) { 
+    //LED Mass range code:
+    if (mass < R1) { 
       digitalWrite(RED, HIGH);
       digitalWrite(GRN, LOW);
       digitalWrite(BLU, LOW);
     }
-    else if ((mass > R2_MIN) && (mass < R2_MAX)) { 
+    if ((mass > R1) && (mass < R2)){ 
       digitalWrite(RED, LOW);
       digitalWrite(GRN, HIGH);
       digitalWrite(BLU, LOW);
     }
-    else if ((mass > R3_MIN) && (mass < R3_MAX)) { 
+    if (mass > R2) { 
       digitalWrite(RED, LOW);
       digitalWrite(GRN, LOW);
       digitalWrite(BLU, HIGH);
