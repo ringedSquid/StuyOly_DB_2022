@@ -3,20 +3,21 @@
 #define READPIN A1
 const int RS=2, E=3, D4=5, D5=6, D6=7, D7=8; //LCD Pins
 const int RED=11, GRN=10, BLU=9; //LED Pins
+
 const int TOGGLE = 12;
 /*Weight ranges in GRAMS, R1 <= R2*/
 
 //RED
-const double R1_MIN = 300;
-const double R1_MAX = 400;
+const double R1_MIN = 30;
+const double R1_MAX = 220;
 
 //GREEN
-const double R2_MIN = 500;
+const double R2_MIN = 180;
 const double R2_MAX = 700;
 
 //BLUE
-const double R3_MIN = 800;
-const double R3_MAX = 950;
+const double R3_MIN = 700;
+const double R3_MAX = 1000;
 
 double offset = 0; //offset reading for sensor
 const int TESTS = 5000;

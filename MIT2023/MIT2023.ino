@@ -15,42 +15,26 @@ void setup() {
   pinMode(BLU, OUTPUT);
   pinMode(TOGGLE_TAR, INPUT);
   pinMode(TOGGLE_READ, INPUT);
+  Serial.begin(9600);
+  Serial.println("Starting");
   Wire.begin();
   Wire.setClock(400000);
-  lcd.begin(16, 2);
-  lcd.print("INIT...");
   if (nau.begin() == false) {
     lcd.clear();
     lcd.print("NAU7802 NOT FOUND!");
   }
-  nau.powerUp();
-  nau.setLDO(NAU7802_LDO_4V5);
-  nau.setGain(NAU7802_GAIN_128);
-  nau.setSampleRate(NAU7802_SPS_320);
   for (uint8_t i = 0; i<10; i++) {
     while (nau.available() == false) {
       delay(1); 
     }
     nau.getReading();
   }
-  nau.calibrateAFE();
-  lcd.clear();
 }
 
 void loop() {
-  boolean interrupt = false; //button pressed?
-  digitalWrite(RED, HIGH);
   double value = nau.getAverage(AVG);
-  while (interrupt == false) {
-    if (digitalRead(TOGGLE_READ) == HIGH) {
-      lcd.clear();
-      lcd.print("DIG: ");
-      lcd.print(value);
-      lcd.setCursor(0, 1);
-      lcd.print(value * (5/16777215.0), 6);
-      interrupt = true;
-    }
-  }
-  digitalWrite(RED, LOW);
+  Serial.print("DIG: ");
+  Serial.println(value * (3.3/pow(2, 23)), 6);
+ 
 }
  
