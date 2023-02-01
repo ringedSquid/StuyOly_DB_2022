@@ -156,3 +156,4 @@ double dig_to_mass(long data) {
 double dig_to_analog(long data) {
   return data * (4.5 / 16777216);
 }
+
