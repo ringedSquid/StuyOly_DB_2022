@@ -1,5 +1,8 @@
 /* INITIAL DATA TESTING SCRIPT */
 #include <LiquidCrystal.h>
+#include <Filters.h>
+
+
 #define READPIN A1
 const int RS=2, E=3, D4=5, D5=6, D6=7, D7=8; //LCD Pins
 const int RED=11, GRN=10, BLU=9; //LED Pins
@@ -20,9 +23,13 @@ const double R3_MIN = 700;
 const double R3_MAX = 1000;
 
 double offset = 0; //offset reading for sensor
-const int TESTS = 5000;
+const int TESTS = 1;
 const int INIT_TESTS = 1000;
 ; //amount of times for the microcontroller to measure data from the sensor. Its all averaged out
+
+FilterOnePole stage0(LOWPASS, 1, 0);
+FilterOnePole stage1(LOWPASS, 0.3, 0);
+RunningStatistics avg;
 
 LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 
@@ -46,6 +53,8 @@ void setup() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("DBMAIN_MIT");
+
+  Serial.begin(9600);
 }
 
 double gx(double x);
@@ -55,6 +64,11 @@ double newtonsmethod(double k);
 void loop() {
   double finalsum = 0;
   double mass = 0;
+  stage0.input(analogRead(READPIN));
+  stage1.input(stage0.output());
+  avg.input(stage1.output());
+  Serial.println(avg.mean());
+  /*
   boolean interrupt = false; //button pressed?
   while (interrupt == false) {
     if (digitalRead(TOGGLE) == HIGH) {
@@ -73,8 +87,9 @@ void loop() {
       lcd.print(finalsum*(5/1023.0));
       lcd.print("v");
       lcd.setCursor(0, 1);
-      lcd.print(mass);
-      lcd.print("g");
+      lcd.print(finalsum);
+      lcd.print("");
+      /*
       if ((mass > R1_MIN) && (mass < R1_MAX)) {
         digitalWrite(RED, HIGH);
         digitalWrite(GRN, LOW);
@@ -92,7 +107,9 @@ void loop() {
       }
       interrupt = true;
     }
+   
   }
+  */
 }
 
 

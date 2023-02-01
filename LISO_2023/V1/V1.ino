@@ -3,18 +3,21 @@
 
 
 // Set weight Ranges in grams, R1 <= R2*/
-const double R1 = 50;
-const double R2 = 500;
+const double R1 = 70;
+const double R2 = 200;
+const double R3 = 300;
 
 
 //Amount of samples for the average
 #define N_AVG 250
 
+#include <Filters.h>
+
 
 //LEDS use analog pins
-#define RED A3
+#define RED A5
 #define GRN A4
-#define BLU A5
+#define BLU A3
 
 
 //Buttons
@@ -28,7 +31,7 @@ LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 const int ss=10;
 unsigned int adcValue, offset = 0;
 
-
+FilterTwoPole filter(30, 1, 0);
 void setup()
 {
   pinMode(B1, INPUT);
@@ -63,6 +66,7 @@ void setup()
   lcd.setCursor(0, 0);
   lcd.print("READY!");
   delay(100);
+  Serial.begin(9600);
 }
 
 
@@ -215,41 +219,10 @@ void loop()
 { 
   double mass = 0;
   double voltage;
-  if (digitalRead(B1) == HIGH) {
-    lcd.clear();
-    lcd.print("READING...");
-    adcValue = readavg(N_AVG) + offset;
-    voltage = double(adcValue)*5/65535;
-    mass = gx1(adcValue);
-    lcd.clear();
-    lcd.print(mass, 4);
-    lcd.print("g");
-    lcd.setCursor(0, 1);
-    lcd.print(voltage, 4);
-    lcd.print(" v");
-    //LED Mass range code:
-    if (mass < R1) { 
-      digitalWrite(RED, HIGH);
-      digitalWrite(GRN, LOW);
-      digitalWrite(BLU, LOW);
-    }
-    if ((mass > R1) && (mass < R2)){ 
-      digitalWrite(RED, LOW);
-      digitalWrite(GRN, HIGH);
-      digitalWrite(BLU, LOW);
-    }
-    if (mass > R2) { 
-      digitalWrite(RED, LOW);
-      digitalWrite(GRN, LOW);
-      digitalWrite(BLU, HIGH);
-    }
-  }
-  if (digitalRead(B2) == HIGH) {
-    lcd.clear();
-    lcd.print("TARE...");
-    tare();
-    lcd.clear();
-    lcd.print("TARE COMPLETE");
+  if (1) {
+    adcValue = readavg(1) + offset;
+    filter.input(adcValue);
+    Serial.println(filter.output());
   }
   digitalWrite(ss,HIGH); // Disable ADC SPI
 }

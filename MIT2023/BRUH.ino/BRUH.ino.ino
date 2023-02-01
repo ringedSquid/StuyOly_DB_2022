@@ -32,47 +32,50 @@
 
 #include <Wire.h>
 #include <Filters.h>
-
+#include <LiquidCrystal.h>
 #include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
 
+//LCD PINS
+const int RS = 2, E = 3, D4 = 4, D5 = 5, D6 = 6, D7 = 7; 
+LiquidCrystal lcd(RS, E, D4, D5, D6, D7);
 NAU7802 myScale; //Create instance of the NAU7802 class
-FilterTwoPole lowpiss(1, 1, 0);
-FilterOnePole highpiss(HIGHPASS, 0.000001);
+FilterOnePole lowpiss(LOWPASS, 10, 0);
+FilterOnePole lowpiss2(LOWPASS, 1, 0);
+FilterOnePole lowpiss3(LOWPASS, 0.1, 0);
+RunningStatistics lowstats;
 
 void setup()
 {
-  Serial.begin(9600);
-  Serial.println("Qwiic Scale Example");
+  Serial.begin(19200);
 
   Wire.begin();
+  lcd.begin(16, 2);
+  lcd.clear();
 
   if (myScale.begin() == false)
   {
     Serial.println("Scale not detected. Please check wiring. Freezing...");
     while (1);
   }
-  myScale.setGain(NAU7802_GAIN_32);
-  myScale.setLDO(NAU7802_LDO_4V2);
+  myScale.setGain(NAU7802_GAIN_128);
+  myScale.setLDO(NAU7802_LDO_4V5);
   myScale.setRegister(NAU7802_ADC, 0x30);
   myScale.setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR);
   myScale.setSampleRate(NAU7802_SPS_80);
   myScale.calibrateAFE();
-  Serial.println("Scale detected!");
 }
-
+int cycle = 500000;
 void loop()
 {
   if(myScale.available() == true)
   {
     long avgRead = 0;
-    for (int i = 0; i< 5; i++) {
+    for (int i = 0; i< 1; i++) {
       long currentReading = myScale.getReading();
-       highpiss.input(currentReading);
-       lowpiss.input(highpiss.output());
-       avgRead += lowpiss.output();
+      lowpiss.input(currentReading);
+      lowpiss2.input(lowpiss.output());
+      lowstats.input(lowpiss2.output());
     }
-    
-    Serial.print("Reading: ");
-    Serial.println(avgRead/5);
+    Serial.println((lowstats.mean() + 456375)/20);
   }
 }
