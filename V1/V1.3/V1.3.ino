@@ -1,5 +1,7 @@
 /* INITIAL DATA TESTING SCRIPT */
 #include <LiquidCrystal.h>
+#include <Filters.h>
+
 
 #define READPIN A1
 const int RS=2, E=3, D4=5, D5=6, D6=7, D7=8; //LCD Pins
@@ -21,9 +23,10 @@ const double R3_MIN = 700;
 const double R3_MAX = 1000;
 
 double offset = 0; //offset reading for sensor
-const int TESTS = 500;
 const int INIT_TESTS = 1000;
 ; //amount of times for the microcontroller to measure data from the sensor. Its all averaged out
+
+double data, mass;
 
 FilterOnePole stage0(LOWPASS, 1, 0);
 FilterOnePole stage1(LOWPASS, 0.3, 0);
@@ -45,43 +48,35 @@ void setup() {
   lcd.print("INIT...");
   delay(1000);
   for (int i=0; i<INIT_TESTS; i++) {
-    init_avg += analogRead(READPIN);
+    stage0.input(analogRead(READPIN));
+    stage1.input(stage0.output());
+    avg.input(stage1.output());
   }
-  offset = init_avg/INIT_TESTS;
+  zero(avg.mean());
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("DBMAIN_MIT");
+  lcd.print("V1.3");
 
   Serial.begin(9600);
 }
 
-double gx(double x);
-double gx1(double x);
-double newtonsmethod(double k);
-
 void loop() {
-  double finalsum = 0;
-  double mass = 0;
+  stage0.input(analogRead(READPIN));
+  stage1.input(stage0.output());
+  avg.input(stage1.output());
+  data = avg.mean();
+  mass = dig_to_mass(data);
+  
   boolean interrupt = false; //button pressed?
   while (interrupt == false) {
     if (digitalRead(TOGGLE) == HIGH) {
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("Measuring...");
+      lcd.print(data*(5/1023.0));
+      lcd.print(" v");
       lcd.setCursor(0, 1);
-      delay(1000);
-      for (int i=0; i<TESTS; i++) {
-        finalsum += analogRead(READPIN) - offset;
-      }
-      finalsum /= TESTS;
-      mass = newtonsmethod(finalsum);
-      lcd.clear();
-      lcd.setCursor(0, 0);
-      lcd.print(finalsum*(5/1023.0));
-      lcd.print("v");
-      lcd.setCursor(0, 1);
-      lcd.print(finalsum);
-      lcd.print("");
+      lcd.print(mass);
+      lcd.print(" g");
       if ((mass > R1_MIN) && (mass < R1_MAX)) {
         digitalWrite(RED, HIGH);
         digitalWrite(GRN, LOW);
@@ -99,22 +94,13 @@ void loop() {
       }
       interrupt = true;
     }
-   
   }
 }
 
-
-double gx(double x) { //g(x) 
-  return (1.16*pow(10, -16)*pow(x, 6)) - (8.71*pow(10,-14)*pow(x,5))-(1.81*pow(10,-10)*pow(x,4)) + (2.79*pow(10,-7)*pow(x,3))-(0.000133*pow(x,2))+(0.221*x)-1.54;
+double dig_to_mass(double data) {
+  return (data - 222)/0.214;
 }
 
-double gx1(double x) { //Derivative of g(x)
- return (6.96*pow(10, -16)*pow(x , 5)) -(4.355*pow(10, -13)*pow(x , 4)) - (7.24*pow(10, -10)*pow(x,3))+(8.37*pow(10,-7)*pow(x , 2)) - (0.000266*x) + 0.221;
-}
-double newtonsmethod(double k) {
-  double x = 100;
-  for(int i=0; i<30; i++) {
-    x = ((gx1(x)*x)-(gx(x)-k))/gx1(x);
-  }
-  return x;
+void zero(double data) {
+  offset = data;
 }

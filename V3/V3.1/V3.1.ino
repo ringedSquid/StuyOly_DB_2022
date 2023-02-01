@@ -120,6 +120,21 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print(voltage, 6);
     lcd.print(" v");
+    if ((mass > R1_MIN) && (mass < R1_MAX)) {
+      digitalWrite(RED, HIGH);
+      digitalWrite(GRN, LOW);
+      digitalWrite(BLU, LOW);
+    }
+    else if ((mass > R2_MIN) && (mass < R2_MAX)) {
+      digitalWrite(RED, LOW);
+      digitalWrite(GRN, HIGH);
+      digitalWrite(BLU, LOW);
+    }
+    else if ((mass > R3_MIN) && (mass < R3_MAX)) {
+      digitalWrite(RED, LOW);
+      digitalWrite(GRN, LOW);
+      digitalWrite(BLU, HIGH);
+    }
   }
   cycledelay += 1;
   cycledelay %= 10;
@@ -156,4 +171,3 @@ double dig_to_mass(long data) {
 double dig_to_analog(long data) {
   return data * (4.5 / 16777216);
 }
-
