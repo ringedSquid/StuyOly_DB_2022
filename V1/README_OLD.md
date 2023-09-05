@@ -1,4 +1,5 @@
-Code for V1 build of Stuy Oly's Detector Builidng event
+
+_Code for V1 build of Stuy Oly's Detector Builidng event
 Microcontroller: Atmega328p (Arduino)
 Half bridge used to measure force (Big lever was used)
 INA125 instrumentation amplifier
