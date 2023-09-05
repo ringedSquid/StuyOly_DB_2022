@@ -20,9 +20,9 @@ However, this configuration makes measurements extremely susceptible to small vi
 
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://github.com/ringedSquid/StuyOly_DB_2022/blob/master/media/V1.jpg)
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://github.com/ringedSquid/StuyOly_DB_2022/blob/master/media/V1_Board.jpg)
 
 
 
